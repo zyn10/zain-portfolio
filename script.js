@@ -158,7 +158,124 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Animation on scroll
+  // ======================
+  // PHYSICS INTERACTIONS
+  // ======================
+
+  // Magnetic cursor effect
+  const magneticArea = document.querySelector(".magnetic-area");
+  document.addEventListener("mousemove", (e) => {
+    const { clientX, clientY } = e;
+    magneticArea.style.left = `${clientX}px`;
+    magneticArea.style.top = `${clientY}px`;
+    magneticArea.style.opacity = "1";
+  });
+
+  document.addEventListener("mouseleave", () => {
+    magneticArea.style.opacity = "0";
+  });
+
+  // Physics-based element interactions
+  const physicsElements = document.querySelectorAll(
+    "[data-physics], .btn, .project-card, .about-image, .highlight"
+  );
+
+  physicsElements.forEach((element) => {
+    element.addEventListener("mousemove", (e) => {
+      const { offsetX, offsetY, target } = e;
+      const { offsetWidth, offsetHeight } = target;
+
+      // Calculate position relative to element center
+      const xPos = (offsetX - offsetWidth / 2) / 20;
+      const yPos = (offsetY - offsetHeight / 2) / 20;
+
+      // Apply different effects based on element type
+      if (element.classList.contains("project-card")) {
+        // 3D tilt effect for cards
+        gsap.to(element, {
+          duration: 0.5,
+          rotateX: -yPos * 0.5,
+          rotateY: xPos * 0.5,
+          ease: "power2.out",
+        });
+
+        // Shadow effect
+        const shadowX = xPos * 2;
+        const shadowY = yPos * 2;
+        element.style.boxShadow = `${shadowX}px ${shadowY}px 30px rgba(0, 0, 0, 0.1)`;
+      } else if (element.classList.contains("btn")) {
+        // Magnetic button effect
+        gsap.to(element, {
+          duration: 0.3,
+          x: xPos * 0.5,
+          y: yPos * 0.5,
+          ease: "power2.out",
+        });
+      } else if (element.classList.contains("about-image")) {
+        // Subtle parallax effect for image
+        const img = element.querySelector("img");
+        gsap.to(img, {
+          duration: 0.5,
+          x: xPos * 0.3,
+          y: yPos * 0.3,
+          ease: "power2.out",
+        });
+      } else if (element.classList.contains("highlight")) {
+        // Wavy text effect
+        gsap.to(element, {
+          duration: 0.3,
+          y: -yPos * 0.5,
+          ease: "power2.out",
+        });
+      } else {
+        // Default magnetic effect
+        gsap.to(element, {
+          duration: 0.3,
+          x: xPos,
+          y: yPos,
+          ease: "power2.out",
+        });
+      }
+    });
+
+    element.addEventListener("mouseleave", () => {
+      // Reset all transformations
+      gsap.to(element, {
+        duration: 0.7,
+        x: 0,
+        y: 0,
+        rotateX: 0,
+        rotateY: 0,
+        boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
+        ease: "elastic.out(1, 0.5)",
+      });
+
+      // Reset image position
+      if (element.classList.contains("about-image")) {
+        const img = element.querySelector("img");
+        gsap.to(img, {
+          duration: 0.7,
+          x: 0,
+          y: 0,
+          ease: "elastic.out(1, 0.5)",
+        });
+      }
+    });
+  });
+
+  // Floating animation for hero elements
+  const heroElements = document.querySelectorAll(".hero-title .title-line");
+  heroElements.forEach((line, index) => {
+    gsap.to(line, {
+      duration: 3 + index,
+      y: -10,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+    });
+  });
+
+  // Physics-based scroll animations
   const animateOnScroll = function () {
     const elements = document.querySelectorAll(
       ".about-image, .project-card, .step"
@@ -169,21 +286,42 @@ document.addEventListener("DOMContentLoaded", function () {
       const screenPosition = window.innerHeight / 1.2;
 
       if (elementPosition < screenPosition) {
-        element.style.opacity = "1";
-        element.style.transform = "translateY(0)";
+        gsap.to(element, {
+          duration: 0.6,
+          opacity: 1,
+          y: 0,
+          ease: "back.out(1.2)",
+        });
       }
     });
   };
 
   // Set initial state for animated elements
-  document
-    .querySelectorAll(".about-image, .project-card, .step")
-    .forEach((element) => {
-      element.style.opacity = "0";
-      element.style.transform = "translateY(20px)";
-      element.style.transition = "opacity 0.6s ease, transform 0.6s ease";
-    });
+  gsap.set(".about-image, .project-card, .step", {
+    opacity: 0,
+    y: 40,
+  });
 
   window.addEventListener("scroll", animateOnScroll);
   animateOnScroll(); // Run once on load
+
+  // Physics-based hover effect for nav links
+  const navItems = document.querySelectorAll(".nav-links a");
+  navItems.forEach((item) => {
+    item.addEventListener("mouseenter", () => {
+      gsap.to(item, {
+        duration: 0.3,
+        y: -3,
+        ease: "power2.out",
+      });
+    });
+
+    item.addEventListener("mouseleave", () => {
+      gsap.to(item, {
+        duration: 0.5,
+        y: 0,
+        ease: "elastic.out(1, 0.5)",
+      });
+    });
+  });
 });
